@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat IA Bancario</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      block-size: 100vh;
+    }
+
+    .chat-container {
+      inline-size: 420px;
+      block-size: 600px;
+      border: 2px solid #000;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+    }
+
+    header {
+      background: #000;
+      color: #fff;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .msg {
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 10px;
+      max-inline-size: 75%;
+      white-space: pre-wrap;
+    }
+
+    .user {
+      background: #000;
+      color: #fff;
+      margin-inline-start: auto;
+    }
+
+    .bot {
+      background: #eee;
+      color: #000;
+      margin-inline-end: auto;
+    }
+
+    .input-box {
+      display: flex;
+      border-block-start: 1px solid #000;
+    }
+
+    input {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      outline: none;
+    }
+
+    button {
+      background: #000;
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <header>Chat IA Bancario</header>
+
+    <div class="chat" id="chat">
+      <div class="msg bot">Hola, soy tu asistente bancario. Escribe tu ID de usuario.</div>
+    </div>
+
+    <div class="input-box">
+      <input type="text" id="input" placeholder="Escribe..." />
+      <button onclick="send()">Enviar</button>
+    </div>
+  </div>
+
+  <script>
+    async function send() {
+      const input = document.getElementById("input");
+      const chat = document.getElementById("chat");
+      const text = input.value.trim();
+
+      if (!text) return;
+
+      const user = document.createElement("div");
+      user.className = "msg user";
+      user.textContent = text;
+      chat.appendChild(user);
+
+      const bot = document.createElement("div");
+      bot.className = "msg bot";
+      bot.textContent = "escribiendo...";
+      chat.appendChild(bot);
+
+      chat.scrollTop = chat.scrollHeight;
+      input.value = "";
+
+      try {
+        const res = await fetch("http://127.0.0.1:8000/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            mensaje: text,
+            session_id: "user1"
+          })
+        });
+
+        const data = await res.json();
+        bot.textContent = data.respuesta ?? "Sin respuesta del servidor.";
+      } catch (error) {
+        bot.textContent = "Error de servidor";
+      }
+
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    document.getElementById("input").addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        send();
+      }
+    });
+  </script>
+</body>
+</html>
